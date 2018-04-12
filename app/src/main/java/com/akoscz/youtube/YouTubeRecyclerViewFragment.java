@@ -97,6 +97,10 @@ public class YouTubeRecyclerViewFragment extends Fragment {
             @Override
             protected void onPreExecute() {
                 super.onPreExecute();
+                if (mProgressDialog == null)
+                {
+                    mProgressDialog = new ProgressDialog(getContext());
+                }
                 mProgressDialog.show();
             }
             

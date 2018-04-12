@@ -1,16 +1,27 @@
 package com.akoscz.youtube;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.pm.PackageManager;
+import android.content.pm.Signature;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.youtube.YouTube;
+import com.google.common.io.BaseEncoding;
+
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 /**
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -38,14 +49,31 @@ public class YouTubeActivity extends AppCompatActivity {
     private final GsonFactory mJsonFactory = new GsonFactory();
     private final HttpTransport mTransport = AndroidHttp.newCompatibleTransport();
 
+    private String getSHA1(String packageName){
+        try {
+            Signature[] signatures = this.getPackageManager().getPackageInfo(packageName, PackageManager.GET_SIGNATURES).signatures;
+            for (Signature signature: signatures) {
+                MessageDigest md;
+                md = MessageDigest.getInstance("SHA-1");
+                md.update(signature.toByteArray());
+                return BaseEncoding.base16().encode(md.digest());
+            }
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.youtube_activity);
 
+        Log.e(this.getClass().getSimpleName(), "SHA1: " + getSHA1(getPackageName()));
         
         if(!isConnected()){
-            Toast.makeText(YouTubeActivity.this,"No Internet Connection Detected",Toast.LENGTH_LONG).show();
+            Toast.makeText(YouTubeActivity.this,"No Internet Connection Detected", Toast.LENGTH_LONG).show();
         }
         
         if (ApiKey.YOUTUBE_API_KEY.startsWith("YOUR_API_KEY")) {
